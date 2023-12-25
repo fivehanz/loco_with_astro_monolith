@@ -1,0 +1,12 @@
+# Ignore files and directories generated during the build process
+target/
+
+# Ignore any compiled binaries
+**/*.rlib
+**/*.rmeta
+
+# Ignore any project-specific files
+.env
+.env.*
+.git
+.git*
