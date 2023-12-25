@@ -33,7 +33,7 @@ uuid = { version = "1.6.0", features = ["v4"] }
 tracing-subscriber = { version = "0.3.17", features = ["env-filter", "json"] }
 
 [[bin]]
-name = "loco_with_astro_monolith-cli"
+name = "app"
 path = "src/bin/main.rs"
 required-features = []
 

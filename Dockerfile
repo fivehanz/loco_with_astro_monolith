@@ -4,10 +4,9 @@ ARG BUN_VERSION=1.0.20
 
 # only 3000 for now
 ARG PORT=3000
-ARG APP_NAME=loco_app
 
-ARG RUST_BUILD_IMAGE=rust:$(RUST_VERSION)-slim-bookworm
-ARG BUN_BUILDER_IMAGE=oven/bun:$(BUN_VERSION)
+ARG RUST_BUILD_IMAGE=rust:${RUST_VERSION}-slim-bookworm
+ARG BUN_BUILDER_IMAGE=oven/bun:${BUN_VERSION}-slim
 ARG RUNNER_IMAGE=debian:bookworm-slim
 
 
@@ -18,6 +17,8 @@ FROM ${RUST_BUILD_IMAGE} as rust-builder
 # build loco app
 WORKDIR /app
 COPY . .
+
+RUN apt-get update && apt-get install -y make
 RUN make build-backend
 
 
@@ -29,7 +30,12 @@ FROM ${BUN_BUILDER_IMAGE} as bun-builder
 WORKDIR /app
 COPY ./frontend .
 COPY ./Makefile .
-RUN make build-frontend
+
+RUN bun i --production \
+    --verbose \
+    --frozen-lockfile
+
+RUN bun --bun run build
 
 
 
@@ -41,8 +47,10 @@ EXPOSE $PORT
 
 WORKDIR /app
 
-COPY --from=rust-builder /app/target/release/ ./${APP_NAME}
+COPY ./config/production.yaml ./config/production.yaml
+COPY --from=rust-builder /app/target/release/app ./app
 COPY --from=bun-builder /app/dist /app/frontend/dist
 
 
-CMD [ "${APP_NAME}", "start", "-e", "production", "--server-and-worker" ]
+# CMD [ "./app", "start", "--server-and-worker" ]
+CMD [ "./app", "start", "-e", "production", "--server-and-worker" ]
